@@ -136,7 +136,10 @@ $active = $request->post->getBool('active');
 // Access uploaded files
 $files = $request->post->files['profile_picture'] ?? [];
 foreach ($files as $file) {
-    // $file is PostFile
+    // PostFile objects contain:
+    // $file->filename: The base filename of the upload
+    // $file->tmp_name: The temporary upload file location
+    // $file->size: The size of the file in bytes
 }
 
 // All form values
