@@ -25,6 +25,7 @@
   },
   "require": {
     "php": ">=8.3",
-    "joby/smol-url": "^1.0"
+    "joby/smol-url": "^1.0",
+    "joby/smol-cast": "^1.3"
   }
 }

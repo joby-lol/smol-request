@@ -9,6 +9,7 @@
 
 namespace Joby\Smol\Request\Cookies;
 
+use Joby\Smol\Cast\CastingGettersTrait;
 use Stringable;
 
 /**
@@ -16,6 +17,9 @@ use Stringable;
  */
 readonly class Cookies
 {
+
+    use CastingGettersTrait;
+
     /**
      * @var array<string,string> $cookies the raw string values of all cookies
      */
@@ -70,72 +74,33 @@ readonly class Cookies
         return $this->cookies[$key] ?? throw new CookieException("Missing required cookie string: $key");
     }
 
-    public function getInt(string $key, ?int $default = null): ?int
-    {
-        if (!isset($this->cookies[$key])) {
-            return $default;
-        }
-        $value = (int) $this->cookies[$key];
-        if ($value != $this->cookies[$key]) {
-            throw new CookieException("Invalid cookie integer: $key = " . $this->cookies[$key]);
-        }
-        return $value;
-    }
-
-    public function requireInt(string $key): int
-    {
-        $value = $this->getInt($key);
-        if (is_null($value)) {
-            throw new CookieException("Missing required cookie integer: $key");
-        }
-        return $value;
-    }
-
-    public function getBool(string $key, ?bool $default = null): ?bool
-    {
-        if (!isset($this->cookies[$key])) {
-            return $default;
-        }
-        $value = strtolower($this->cookies[$key]);
-        return match (strtolower($value)) {
-            '1', 'true', 'on', 'yes' => true,
-            '0', 'false', 'off', 'no' => false,
-            default => throw new CookieException("Invalid cookie boolean: $key = " . $this->cookies[$key]),
-        };
-    }
-
-    public function requireBool(string $key): bool
-    {
-        $value = $this->getBool($key);
-        if (is_null($value)) {
-            throw new CookieException("Missing required cookie boolean: $key");
-        }
-        return $value;
-    }
-
-    public function getFloat(string $key, ?float $default = null): ?float
-    {
-        if (!isset($this->cookies[$key])) {
-            return $default;
-        }
-        $value = (float) $this->cookies[$key];
-        if ($value != $this->cookies[$key]) {
-            throw new CookieException("Invalid cookie float: $key = " . $this->cookies[$key]);
-        }
-        return $value;
-    }
-
-    public function requireFloat(string $key): float
-    {
-        $value = $this->getFloat($key);
-        if (is_null($value)) {
-            throw new CookieException("Missing required cookie float: $key");
-        }
-        return $value;
-    }
-
     public function has(string $key): bool
     {
         return isset($this->cookies[$key]);
     }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createCastException(string $type, string $name, \Throwable $previous): \Throwable
+    {
+        return new CookieException("Error casting cookie '$name' to type $type: " . $previous->getMessage(), 0, $previous);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createRequiredException(string $type, string $name): \Throwable
+    {
+        return new CookieException("Missing required cookie $type: $name");
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getCastableValue(string $key): mixed
+    {
+        return $this->get($key);
+    }
+
 }

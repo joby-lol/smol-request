@@ -9,11 +9,21 @@
 
 namespace Joby\Smol\Request\Post;
 
+use Joby\Smol\Cast\CastingGettersTrait;
+use Stringable;
+
 /**
  * Class for storing post data, including posted values and uploaded files.
  */
 class Post
 {
+
+    use CastingGettersTrait;
+
+    protected string $castingRequiredExceptionClass = PostException::class;
+
+    protected string $castingErrorExceptionClass = PostException::class;
+
     /** @var array<string,string> $args */
     public array $args;
     /** @var array<string,PostFile[]> $files */
@@ -33,97 +43,33 @@ class Post
         $this->files = $files;
     }
 
-    public function get(string $key, ?string $default = null): ?string
+    public function get(string|Stringable $key, ?string $default = null): ?string
     {
-        return $this->args[$key] ?? $default;
+        return $this->args[(string) $key] ?? $default;
     }
 
-    public function require(string $key): string
+    public function require(string|Stringable $key): string
     {
-        return $this->args[$key] ?? throw new PostException("Missing required POST value: $key");
+        return $this->args[(string) $key] ?? throw new PostException("Missing required POST value: $key");
     }
 
-    public function getInt(string $key, ?int $default = null): ?int
+    public function has(string|Stringable $key): bool
     {
-        if (!isset($this->args[$key])) {
-            return $default;
-        }
-        $value = (int) $this->args[$key];
-        if ($value != $this->args[$key]) {
-            throw new PostException("Invalid POST integer: $key: $value");
-        }
-        return $value;
+        return isset($this->args[(string) $key]);
     }
 
-    public function requireInt(string $key): int
+    public function file(string|Stringable $name): ?PostFile
     {
-        $value = $this->getInt($key);
-        if (is_null($value)) {
-            throw new PostException("Missing required POST integer: $key");
-        }
-        return $value;
-    }
-
-    public function getBool(string $key, ?bool $default = null): ?bool
-    {
-        if (!isset($this->args[$key])) {
-            return $default;
-        }
-        $value = strtolower($this->args[$key]);
-        return match ($value) {
-            '1', 'true', 'on', 'yes' => true,
-            '0', 'false', 'off', 'no' => false,
-            default => throw new PostException("Invalid POST boolean: $key: $value"),
-        };
-    }
-
-    public function requireBool(string $key): bool
-    {
-        $value = $this->getBool($key);
-        if (is_null($value)) {
-            throw new PostException("Missing required POST boolean: $key");
-        }
-        return $value;
-    }
-
-    public function getFloat(string $key, ?float $default = null): ?float
-    {
-        if (!isset($this->args[$key])) {
-            return $default;
-        }
-        $value = (float) $this->args[$key];
-        if ($value != $this->args[$key]) {
-            throw new PostException("Invalid POST float: $key: $value");
-        }
-        return $value;
-    }
-
-    public function requireFloat(string $key): float
-    {
-        $value = $this->getFloat($key);
-        if (is_null($value)) {
-            throw new PostException("Missing required POST float: $key");
-        }
-        return $value;
-    }
-
-    public function has(string $key): bool
-    {
-        return isset($this->args[$key]);
-    }
-
-    public function file(string $name): ?PostFile
-    {
-        if (!isset($this->files[$name])) {
+        if (!isset($this->files[(string) $name])) {
             return null;
         }
-        if (count($this->files[$name]) > 1) {
+        if (count($this->files[(string) $name]) > 1) {
             throw new UploadException("Multiple files uploaded for single file field: $name");
         }
-        return $this->files[$name][0];
+        return $this->files[(string) $name][0];
     }
 
-    public function requireFile(string $name): PostFile
+    public function requireFile(string|Stringable $name): PostFile
     {
         return $this->file($name)
             ?? throw new UploadException("No file uploaded for required field: $name");
@@ -132,15 +78,15 @@ class Post
     /**
      * @return array<PostFile>
      */
-    public function files(string $name): array
+    public function files(string|Stringable $name): array
     {
-        return $this->files[$name] ?? [];
+        return $this->files[(string) $name] ?? [];
     }
 
     /**
      * @return array<PostFile>
      */
-    public function requireFiles(string $name, int $min = 0, int|float $max = INF): array
+    public function requireFiles(string|Stringable $name, int $min = 0, int|float $max = INF): array
     {
         $files = $this->files($name);
         if (count($files) < $min) {
@@ -150,5 +96,29 @@ class Post
             throw new UploadException("No more than $max uploads allowed for field $name");
         }
         return $files;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getCastableValue(string $key): mixed
+    {
+        return $this->get($key);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createCastException(string $type, string $name, \Throwable $previous): \Throwable
+    {
+        return new PostException("Invalid POST $type: $name", previous: $previous);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createRequiredException(string $type, string $name): \Throwable
+    {
+        return new PostException("Missing required POST $type: $name");
     }
 }
