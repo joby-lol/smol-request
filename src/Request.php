@@ -18,7 +18,7 @@ use Joby\Smol\Request\Source\Source;
 use Joby\Smol\URL\URL;
 
 /**
- * Global static facade for accessing the current request's data.
+ * This class can be used as both an instance and a static facade for getting the "current" instance. The static methods are just pass-throughs to the Current class, and the instance methods are for working with a specific Request instance.
  */
 readonly class Request
 {
