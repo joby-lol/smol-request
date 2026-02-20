@@ -12,6 +12,8 @@ namespace Joby\Smol\Request\Cache;
 use Joby\Smol\Request\Cache\Keys\AuthorizationKeyModifier;
 use Joby\Smol\Request\Cache\Keys\CookieKeyModifier;
 use Joby\Smol\Request\Cache\Keys\HeaderKeyModifier;
+use Joby\Smol\Request\Cache\Keys\PathKeyModifier;
+use Joby\Smol\Request\Cache\Keys\QueryKeyModifier;
 use Joby\Smol\Request\Cache\Keys\SessionKeyModifier;
 use Joby\Smol\Request\Cache\Scope\AuthorizationScopeModifier;
 use Joby\Smol\Request\Cache\Scope\CookieScopeModifier;
@@ -53,6 +55,8 @@ class Cache
             'cookies'       => new CookieKeyModifier(),
             'headers'       => new HeaderKeyModifier(),
             'session'       => new SessionKeyModifier(),
+            'path'          => new PathKeyModifier(),
+            'query'         => new QueryKeyModifier(),
         ],
     )
     {
