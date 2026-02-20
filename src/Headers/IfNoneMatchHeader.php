@@ -37,6 +37,8 @@ readonly class IfNoneMatchHeader extends AbstractListHeader
      */
     public function noneMatch(string ...$etags): bool
     {
+        if ($this->etags == ['*'])
+            return false;
         foreach ($etags as $etag) {
             if (in_array($etag, $this->etags, true)) {
                 return false;
@@ -47,6 +49,8 @@ readonly class IfNoneMatchHeader extends AbstractListHeader
 
     public function __toString(): string
     {
+        if ($this->etags == ['*'])
+            return '*';
         $parts = [];
         foreach ($this->etags as $etag) {
             $parts[] = '"' . $etag . '"';
