@@ -19,6 +19,8 @@ use Joby\Smol\URL\URL;
 
 /**
  * This class can be used as both an instance and a static facade for getting the "current" instance. The static methods are just pass-throughs to the Current class, and the instance methods are for working with a specific Request instance.
+ * 
+ * @phpstan-consistent-constructor
  */
 readonly class Request
 {
@@ -70,7 +72,7 @@ readonly class Request
         ?Cookies $cookies = null,
         ?Post $post = null,
         ?Source $source = null,
-    ): self {
+    ): static {
         if (
             $url === null
             && $method === null
@@ -81,7 +83,7 @@ readonly class Request
         ) {
             return $this;
         }
-        return new self(
+        return new static(
             $url ?? $this->url,
             $method ?? $this->method,
             $headers ?? $this->headers,
