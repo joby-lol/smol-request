@@ -22,6 +22,7 @@ use Joby\Smol\URL\UrlFactoryInterface;
  */
 readonly class RequestFactory
 {
+
     /**
      * @param UrlFactoryInterface<URL> $url_factory
      */
@@ -31,19 +32,20 @@ readonly class RequestFactory
         public CookiesFactory $cookies_factory = new CookiesFactory(),
         public PostFactory $post_factory = new PostFactory(),
         public SourceFactory $source_factory = new SourceFactory(),
-    ) {
-    }
+    ) {}
 
     public function fromGlobals(): Request
     {
         return new Request(
             $this->url_factory->fromGlobals(),
-            // @phpstan-ignore-next-line we're trusting that $_SERVER['REQUEST_METHOD'] is set and valid, and if it isn't that's a good time to error out
-            Method::tryFrom($_SERVER['REQUEST_METHOD']) ?? Method::GET,
+                // @phpstan-ignore-next-line we're trusting that $_SERVER['REQUEST_METHOD'] is set and valid, and if it isn't that's a good time to error out
+            (isset($_SERVER['REQUEST_METHOD']) ? Method::tryFrom($_SERVER['REQUEST_METHOD']) : null)
+            ?? Method::GET,
             $this->headers_factory->fromGlobals(),
             $this->cookies_factory->fromGlobals(),
             $this->post_factory->fromGlobals(),
             $this->source_factory->fromGlobals(),
         );
     }
+
 }
