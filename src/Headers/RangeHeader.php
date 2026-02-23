@@ -32,7 +32,6 @@ readonly class RangeHeader extends AbstractListHeader
                     return $b->end_bytes <=> $a->end_bytes;
                 }
                 // both are normal ranges, sort by start ascending then end ascending
-                assert($b instanceof RangeHeaderRange); // phpstan can't figure this out I guess
                 return $a->start_byte <=> $b->start_byte
                     ?: ($a->end_byte <=> $b->end_byte);
             },
