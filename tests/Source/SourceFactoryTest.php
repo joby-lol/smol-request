@@ -130,7 +130,7 @@ class SourceFactoryTest extends TestCase
 
     public function test_client_from_headers_respects_priority_order(): void
     {
-        $factory                        = new SourceFactory([], ['x-priority-one', 'x-priority-two']);
+        $factory = new SourceFactory([], ['x-priority-one', 'x-priority-two']);
         $_SERVER['HTTP_X_PRIORITY_ONE'] = '1.1.1.1';
         $_SERVER['HTTP_X_PRIORITY_TWO'] = '2.2.2.2';
         $this->assertSame('1.1.1.1', $factory->clientFromHeaders());
@@ -138,23 +138,23 @@ class SourceFactoryTest extends TestCase
 
     public function test_extracts_first_ip_from_comma_separated_list(): void
     {
-        $factory                         = new SourceFactory([], ['x-forwarded-for']);
+        $factory = new SourceFactory([], ['x-forwarded-for']);
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.195, 70.41.3.18';
         $this->assertSame('203.0.113.195', $factory->clientFromHeaders());
     }
 
     public function test_trims_and_normalizes_header_ip(): void
     {
-        $factory                         = new SourceFactory([], ['x-forwarded-for']);
+        $factory = new SourceFactory([], ['x-forwarded-for']);
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '  ::1  , 1.2.3.4';
         $this->assertSame('localhost', $factory->clientFromHeaders());
     }
 
     public function test_from_globals_handles_trusted_proxy_but_missing_headers(): void
     {
-        $factory                = new SourceFactory(['10.0.0.1']);
+        $factory = new SourceFactory(['10.0.0.1']);
         $_SERVER['REMOTE_ADDR'] = '10.0.0.1';
-        $source                 = $factory->fromGlobals();
+        $source = $factory->fromGlobals();
         $this->assertSame('10.0.0.1', $source->client);
     }
 

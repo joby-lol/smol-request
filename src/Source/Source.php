@@ -14,9 +14,11 @@ namespace Joby\Smol\Request\Source;
  */
 readonly class Source
 {
+
     public function __construct(
         public string $client,
         public string $actual,
-    ) {
-    }
+        public string $useragent,
+    ) {}
+
 }

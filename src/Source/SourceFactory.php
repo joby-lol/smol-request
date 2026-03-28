@@ -11,8 +11,10 @@ namespace Joby\Smol\Request\Source;
 
 readonly class SourceFactory
 {
+
     /** @var array<string> $trusted_proxies */
     public array $trusted_proxies;
+
     /** @var array<string> $trusted_headers */
     public array $trusted_headers;
 
@@ -77,7 +79,8 @@ readonly class SourceFactory
             'x-forwarded-for', // Standard (ish)
             'forwarded', // RFC 7239
         ],
-    ) {
+    )
+    {
         $this->trusted_proxies = array_unique(array_map($this->normalize(...), $trusted_proxies));
         $this->trusted_headers = array_unique(array_map(strtolower(...), $trusted_headers));
     }
@@ -94,7 +97,11 @@ readonly class SourceFactory
         if ($this->isTrustedProxy($actual)) {
             $client = $this->clientFromHeaders() ?? $actual;
         }
-        return new Source($client, $actual);
+        return new Source(
+            $client,
+            $actual,
+            $_SERVER['HTTP_USER_AGENT'] ?? '', // @phpstan-ignore-line it's a string
+        );
     }
 
     public function clientFromHeaders(): ?string
@@ -157,10 +164,12 @@ readonly class SourceFactory
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $mask = $mask ?? 32;
             return $this->isCidrMatchV4($ip, $subnet, $mask);
-        } elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+        }
+        elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
             $mask = $mask ?? 128;
             return $this->isCidrMatchV6($ip, $subnet, $mask);
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -214,4 +223,5 @@ readonly class SourceFactory
         }
         return $input;
     }
+
 }
